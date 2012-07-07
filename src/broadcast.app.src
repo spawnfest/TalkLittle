@@ -1,0 +1,18 @@
+%% Feel free to use, reuse and abuse the code in this file.
+
+{application, broadcast, [
+	{description, "Web UI Broadcast"},
+	{vsn, "0.1.0"},
+	{modules, []},
+	{registered, [broadcast_sup]},
+	{applications, [
+		kernel,
+		stdlib,
+		crypto,
+		public_key,
+		ssl,
+		cowboy
+	]},
+	{mod, {broadcast, []}},
+	{env, []}
+]}.
