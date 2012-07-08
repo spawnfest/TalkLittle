@@ -30,8 +30,10 @@ websocket_init(_Any, Req, []) ->
 	{ok, Req2, undefined, hibernate}.
 
 websocket_handle({text, <<"click:", ElementId/binary>>}, Req, State) ->
+	gen_server:cast(event_history_server, {click, ElementId}),
 	{reply, {text, << "You clicked: #", ElementId/binary >>}, Req, State, hibernate};
 websocket_handle({text, <<"mouseenter:", ElementId/binary>>}, Req, State) ->
+	gen_server:cast(event_history_server, {mouseenter, ElementId}),
 	{reply, {text, << "You mouse-entered: #", ElementId/binary >>}, Req, State, hibernate};
 websocket_handle({text, Msg}, Req, State) ->
 	{reply, {text, << "You said: ", Msg/binary >>}, Req, State, hibernate};

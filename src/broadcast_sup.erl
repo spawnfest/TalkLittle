@@ -17,4 +17,6 @@ start_link() ->
 %% supervisor.
 
 init([]) ->
-	{ok, {{one_for_one, 10, 10}, []}}.
+	{ok, {{one_for_one, 10, 10},
+		  [{event_history_server, {event_history_server, start_link, []},
+            permanent, brutal_kill, worker, [event_history_server]}]}}.
