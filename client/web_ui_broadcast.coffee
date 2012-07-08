@@ -1,13 +1,16 @@
 websocket = null
 
+MOUSE_GRID_ROWS = 4
+MOUSE_GRID_COLS = 4
+
 setupEventSource = ->
   source = new EventSource '/eventsource/live'
   
   f = (event) ->
     if event.data == 'sender_you'
-      setupWebsocket()
+      startSending()
     else if event.data == 'sender_someone'
-      stopWebsocket()
+      stopSending()
     else
       addStatus "server sent the following: '#{event.data}'"
   source.addEventListener 'message', f, false
@@ -20,6 +23,14 @@ setupEventSource = ->
     if event.eventPhase == EventSource.CLOSED
       addStatus 'eventsource was closed.'
   source.addEventListener 'error', f, false
+  
+startSending = ->
+  setupWebsocket()
+  addMouseListeners()
+  
+stopSending = ->
+  stopWebsocket()
+  removeMouseListeners()
   
 setupWebsocket = ->
   if ("MozWebSocket" in window)
@@ -36,9 +47,9 @@ setupWebsocket = ->
       
     websocket.onmessage = (event) ->
       if event.data == 'sender_you'
-        setupWebsocket()
+        startSending()
       else if event.data == 'sender_someone'
-        stopWebsocket()
+        stopSending()
       else
         addStatus "server sent the following: '#{receivedMsg}'"
     
@@ -59,6 +70,28 @@ addStatus = (text) ->
   (document.getElementById 'status').innerHTML =
     (document.getElementById 'status').innerHTML + "#{date}: #{text}<br/>"
 
+addMouseListeners = ->
+  (jQuery ':button').click ->
+    recordClick this
+  
+  # TODO use backbone.js in a future version
+  mouseGrid = jQuery '<table>'
+  for rid in [1..MOUSE_GRID_ROWS]
+    row = jQuery '<tr>'
+    for cid in [1..MOUSE_GRID_COLS]
+      col = jQuery '<td>'
+      gridId = MOUSE_GRID_COLS * (rid-1) + cid
+      col.addClass "row-#{rid}"
+      col.addClass "col-#{cid}"
+      row.append col
+    mouseGrid.append row
+  mouseGrid.attr 'id', 'web-ui-broadcast-mouse-grid'
+  mouseGrid.css 'width', '100%'
+  mouseGrid.css 'height', '100%'
+  mouseGrid.css 'position', 'absolute'
+  mouseGrid.css 'top', '0px'
+  mouseGrid.css 'left', '0px'
+  (jQuery 'body').append mouseGrid
 
 # main
 if window.EventSource?
