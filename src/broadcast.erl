@@ -21,7 +21,7 @@ start(_Type, _Args) ->
 		]}
 	],
 	cowboy:start_listener(my_http_listener, 100,
-		cowboy_tcp_transport, [{port, 8080}],
+		cowboy_tcp_transport, [{port, 8080}, {ip, {127,0,0,1}}],
 		cowboy_http_protocol, [{dispatch, Dispatch}]
 	),
 	cowboy:start_listener(my_https_listener, 100,
