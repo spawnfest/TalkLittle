@@ -3,7 +3,7 @@
 -export([init/3, handle/2, terminate/2]).
 
 init({_Any, http}, Req, []) ->
-	timer:send_after(1000, {event, <<"sender_you">>}),
+	%timer:send_after(1000, {event, <<"sender_you">>}),
 	timer:send_interval(1000, send),
 	timer:send_after(10000, shutdown),
 	{ok, Req, undefined}.

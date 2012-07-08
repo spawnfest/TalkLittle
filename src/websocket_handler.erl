@@ -25,9 +25,21 @@ terminate(_Req, _State) ->
 	ok.
 
 websocket_init(_Any, Req, []) ->
-	timer:send_interval(1000, tick),
-	Req2 = cowboy_http_req:compact(Req),
-	{ok, Req2, undefined, hibernate}.
+	%timer:send_interval(1000, tick),
+	{Ip, Req2} = cowboy_http_req:peer_addr(Req),
+	
+	%% TODO fix race condition if multiple clients join simultaneously
+	case gen_server:call(event_history_server, sender) of
+		{ok, undefined} ->
+			gen_server:call(event_hitsory_server, {sender, Ip}),
+			Req3 = cowboy_http_req:compact(Req),
+			{ok, Req3, undefined, hibernate};
+		{ok, Ip} ->
+			Req3 = cowboy_http_req:compact(Req),
+			{ok, Req3, undefined, hibernate};
+		{ok, _} ->
+			{error, not_sender}  %% FIXME probably improper return value
+	end.
 
 websocket_handle({text, <<"click:", ElementId/binary>>}, Req, State) ->
 	gen_server:cast(event_history_server, {click, ElementId}),
@@ -35,6 +47,8 @@ websocket_handle({text, <<"click:", ElementId/binary>>}, Req, State) ->
 websocket_handle({text, <<"mouseenter:", ElementId/binary>>}, Req, State) ->
 	gen_server:cast(event_history_server, {mouseenter, ElementId}),
 	{reply, {text, << "You mouse-entered: #", ElementId/binary >>}, Req, State, hibernate};
+websocket_handle({text, <<"sender_you">>}, Req, State) ->
+	{reply, {text, <<"sender_you">>}, Req, State, hibernate};
 websocket_handle({text, Msg}, Req, State) ->
 	{reply, {text, << "You said: ", Msg/binary >>}, Req, State, hibernate};
 websocket_handle(_Any, Req, State) ->

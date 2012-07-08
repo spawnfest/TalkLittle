@@ -18,7 +18,8 @@
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--record(state, {evlist = []  :: list()
+-record(state, {evlist = []  :: list(),
+				sender_ip    :: inet:ip_address()
 			   }).
 
 %% ====================================================================
@@ -55,7 +56,14 @@ init([]) ->
 handle_call({get_events, SinceTime}=_Request, _From, State) ->
     Events = lists:takewhile(fun({_Type, _ElementId, TimeId}) -> TimeId >= SinceTime end, State#state.evlist),
 	Reply = {ok, Events},
-    {reply, Reply, State}.
+    {reply, Reply, State};
+%% get/set the sender pid
+handle_call(sender, _From, State) ->
+	Reply = {ok, State#state.sender_ip},
+	{reply, Reply, State};
+handle_call({sender, NewSender}, _From, State) ->
+	Reply = {ok, State#state{sender_ip=NewSender}},
+	{reply, Reply, State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
