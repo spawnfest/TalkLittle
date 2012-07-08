@@ -14,8 +14,8 @@ start() ->
 start(_Type, _Args) ->
 	Dispatch = [
 		{'_', [
-			{[<<"websocket">>], websocket_handler, []},
-			%{[<<"eventsource">>], eventsource_handler, []},
+			{[<<"websocket">>], websocket_handler, []},  % do not use this endpoint for HTTP, only for WS
+			{[<<"eventsource">>], eventsource_handler, []},  % do not use this endpoint
 			{[<<"eventsource">>, <<"live">>], eventsource_emitter, []},
 			{'_', default_handler, []}
 		]}
