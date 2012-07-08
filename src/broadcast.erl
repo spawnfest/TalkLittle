@@ -15,7 +15,7 @@ start(_Type, _Args) ->
 	Dispatch = [
 		{'_', [
 			{[<<"websocket">>], websocket_handler, []},
-			{[<<"eventsource">>], eventsource_handler, []},
+			%{[<<"eventsource">>], eventsource_handler, []},
 			{[<<"eventsource">>, <<"live">>], eventsource_emitter, []},
 			{'_', default_handler, []}
 		]}
