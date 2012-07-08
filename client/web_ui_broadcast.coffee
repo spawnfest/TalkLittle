@@ -130,6 +130,7 @@ initSenderMouse = ->
 if window.EventSource?
   initSenderMouse()
   setupEventSource()
+  startSending()  # server will kill the websocket if we are not the sender, otherwise socket will stay open
 else
   (document.getElementById 'status').innerHTML =
     "Sorry but your browser doesn't support the EventSource API";

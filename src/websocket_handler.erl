@@ -31,7 +31,7 @@ websocket_init(_Any, Req, []) ->
 	%% TODO fix race condition if multiple clients join simultaneously
 	case gen_server:call(event_history_server, sender) of
 		{ok, undefined} ->
-			gen_server:call(event_hitsory_server, {sender, Ip}),
+			gen_server:call(event_history_server, {sender, Ip}),
 			Req3 = cowboy_http_req:compact(Req),
 			{ok, Req3, undefined, hibernate};
 		{ok, Ip} ->
