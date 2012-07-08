@@ -1,5 +1,5 @@
-web UI broadcaster
-==================
+Web UI Bro
+==========
 
 An Erlang server and JavaScript library that allow you to
 live-broadcast UI events on a webpage.
