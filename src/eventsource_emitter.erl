@@ -1,10 +1,9 @@
-%% Feel free to use, reuse and abuse the code in this file.
-
 -module(eventsource_emitter).
 -behaviour(cowboy_http_handler).
 -export([init/3, handle/2, terminate/2]).
 
 init({_Any, http}, Req, []) ->
+	timer:send_after(1000, {event, <<"sender_you">>}),
 	timer:send_interval(1000, {event, <<"Tick">>}),
 	timer:send_after(10000, shutdown),
 	{ok, Req, undefined}.

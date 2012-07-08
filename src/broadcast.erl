@@ -1,5 +1,3 @@
-%% Feel free to use, reuse and abuse the code in this file.
-
 -module(broadcast).
 -behaviour(application).
 -export([start/0, start/2, stop/1]).

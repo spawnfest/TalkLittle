@@ -3,14 +3,24 @@ websocket = null
 MOUSE_GRID_ROWS = 4
 MOUSE_GRID_COLS = 4
 
+$senderMouse = null
+
+# EventSource is used by receivers
 setupEventSource = ->
   source = new EventSource '/eventsource/live'
   
   f = (event) ->
-    if event.data == 'sender_you'
+    if event.data == 'sender_you' and not websocket?
       startSending()
     else if event.data == 'sender_someone'
       stopSending()
+    else if event.data.indexOf 'click:' == 0
+      id = event.data.substr 6
+      (jQuery "##{id}").trigger 'click' if id
+    else if event.data.indexOf 'mouseenter:' == 0
+      id = event.data.substr 11
+      offset = (jQuery "##{id}").offset()
+      drawMouse offset.top, offset.left
     else
       addStatus "server sent the following: '#{event.data}'"
   source.addEventListener 'message', f, false
@@ -25,17 +35,20 @@ setupEventSource = ->
   source.addEventListener 'error', f, false
   
 startSending = ->
+  console.log "startSending"
   setupWebsocket()
   addMouseListeners()
   
 stopSending = ->
+  console.log "stopSending"
   stopWebsocket()
   removeMouseListeners()
   
+# WebSocket is used by sender
 setupWebsocket = ->
-  if ("MozWebSocket" in window)
-    window.WebSocket = MozWebSocket;
-  if ("WebSocket" in window)
+  if "MozWebSocket" of window
+    window.WebSocket = MozWebSocket
+  if "WebSocket" of window
     # browser supports websockets
     websocket = new WebSocket "ws://localhost:8080/websocket"
     websocket.onopen = ->
@@ -46,12 +59,12 @@ setupWebsocket = ->
       addStatus "sent message to server: 'hello server'!"
       
     websocket.onmessage = (event) ->
-      if event.data == 'sender_you'
+      if event.data == 'sender_you' and not websocket?
         startSending()
       else if event.data == 'sender_someone'
         stopSending()
       else
-        addStatus "server sent the following: '#{receivedMsg}'"
+        addStatus "server sent the following: '#{event.data}'"
     
     websocket.onclose = ->
       # websocket was closed
@@ -81,8 +94,7 @@ addMouseListeners = ->
     for cid in [1..MOUSE_GRID_COLS]
       col = jQuery '<td>'
       gridId = MOUSE_GRID_COLS * (rid-1) + cid
-      col.addClass "row-#{rid}"
-      col.addClass "col-#{cid}"
+      col.attr "id", "row-#{rid}-col-#{cid}"
       row.append col
     mouseGrid.append row
   mouseGrid.attr 'id', 'web-ui-broadcast-mouse-grid'
@@ -92,9 +104,31 @@ addMouseListeners = ->
   mouseGrid.css 'top', '0px'
   mouseGrid.css 'left', '0px'
   (jQuery 'body').append mouseGrid
+  
+  (jQuery '#web-ui-broadcast-mouse-grid td').mouseenter ->
+    recordMouseenter this
+    
+recordClick = (el) ->
+  buttonId = (jQuery el).attr 'id'
+  if buttonId?
+    console.log "click:#{buttonId}"
+    websocket.send "click:#{buttonId}"
+    
+recordMouseenter = (el) ->
+  gridId = (jQuery el).attr 'id'
+  if gridId?
+    console.log "mouseenter:#{gridId}"
+    websocket.send "mouseenter:#{gridId}"
+    
+drawMouse = (top, left) ->
+  $senderMouse.offset top:top, left:left
+  
+initSenderMouse = ->
+  $senderMouse = jQuery '#sender-mouse'
 
 # main
 if window.EventSource?
+  initSenderMouse()
   setupEventSource()
 else
   (document.getElementById 'status').innerHTML =

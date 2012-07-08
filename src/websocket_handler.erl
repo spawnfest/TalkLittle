@@ -1,5 +1,3 @@
-%% Feel free to use, reuse and abuse the code in this file.
-
 -module(websocket_handler).
 -behaviour(cowboy_http_handler).
 -behaviour(cowboy_http_websocket_handler).
@@ -31,6 +29,10 @@ websocket_init(_Any, Req, []) ->
 	Req2 = cowboy_http_req:compact(Req),
 	{ok, Req2, undefined, hibernate}.
 
+websocket_handle({text, <<"click:", ElementId/binary>>}, Req, State) ->
+	{reply, {text, << "You clicked: #", ElementId/binary >>}, Req, State, hibernate};
+websocket_handle({text, <<"mouseenter:", ElementId/binary>>}, Req, State) ->
+	{reply, {text, << "You mouse-entered: #", ElementId/binary >>}, Req, State, hibernate};
 websocket_handle({text, Msg}, Req, State) ->
 	{reply, {text, << "You said: ", Msg/binary >>}, Req, State, hibernate};
 websocket_handle(_Any, Req, State) ->
